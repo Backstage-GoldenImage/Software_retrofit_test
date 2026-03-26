@@ -2,13 +2,10 @@ pipeline {
     agent any
 
     environment {
-        // ✅ fallback if env not injected
-        APP_NAME = "${env.APP_NAME ?: 'default-app'}".toLowerCase()
-
+        APP_NAME = "${{values.app_name}}".toLowerCase()
         DOCKER_IMAGE = "chaitanyapandeygspann/${APP_NAME}"
         DOCKER_TAG = "1.0.${BUILD_NUMBER}"
         IMAGE_TAG = "${DOCKER_IMAGE}:${DOCKER_TAG}"
-
         GITOPS_REPO = "https://github.com/Backstage-GoldenImage/k8s-artifact.git"
     }
 
@@ -20,18 +17,6 @@ pipeline {
             }
         }
 
-        stage('Resolve App Name') {
-            steps {
-                script {
-                    def repoName = sh(
-                        script: "basename `git config --get remote.origin.url` .git",
-                        returnStdout: true
-                    ).trim()
-        
-                    env.APP_NAME = repoName.toLowerCase()
-                }
-            }
-        }
 
         stage('Install Dependencies') {
             steps {
