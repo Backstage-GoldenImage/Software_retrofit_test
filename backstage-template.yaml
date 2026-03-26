@@ -20,14 +20,16 @@ spec:
     properties:
 
       repoUrl:
-        title: Repository
-        type: string
-        ui:field: RepoUrlPicker
-        ui:options:
-          allowedHosts:
-            - github.com
-          allowedOwners:
-            - Backstage-GoldenImage
+      title: Repository
+      type: string
+      ui:field: RepoUrlPicker
+      ui:options:
+        allowedHosts:
+          - github.com
+        allowedOwners:
+          - Backstage-GoldenImage
+        # requestUserCredentials:
+        #   secretsKey: USER_OAUTH_TOKEN
 
       component_id:
         title: Component Name
@@ -59,6 +61,7 @@ spec:
       action: publish:github:pull-request
       input:
         repoUrl: ${{ parameters.repoUrl }}
+        # token: ${{ secrets.USER_OAUTH_TOKEN }}
         branchName: backstage-integration-${{ parameters.component_id }}
         title: "Add Jenkins + ArgoCD CI/CD"
         description: |
