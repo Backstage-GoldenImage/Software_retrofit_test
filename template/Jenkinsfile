@@ -1,0 +1,107 @@
+pipeline {
+    agent any
+
+    environment {
+        // ✅ fallback if env not injected
+        APP_NAME = "${env.APP_NAME ?: 'default-app'}".toLowerCase()
+
+        DOCKER_IMAGE = "chaitanyapandeygspann/${APP_NAME}"
+        DOCKER_TAG = "1.0.${BUILD_NUMBER}"
+        IMAGE_TAG = "${DOCKER_IMAGE}:${DOCKER_TAG}"
+
+        GITOPS_REPO = "https://github.com/Backstage-GoldenImage/k8s-artifact.git"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Resolve App Name') {
+            steps {
+                script {
+                    if (!env.APP_NAME || env.APP_NAME == 'default-app') {
+                        env.APP_NAME = sh(
+                            script: "basename `git rev-parse --show-toplevel`",
+                            returnStdout: true
+                        ).trim().toLowerCase()
+                    }
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install || true'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'npm test || true'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${IMAGE_TAG} .'
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh 'docker push ${IMAGE_TAG}'
+            }
+        }
+
+        stage('Update GitOps Repo') {
+            steps {
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                    rm -rf k8s-artifact
+
+                    git clone --depth 1 https://${GITHUB_TOKEN}@github.com/Backstage-GoldenImage/k8s-artifact.git
+                    cd k8s-artifact
+
+                    mkdir -p apps/${APP_NAME}
+
+                    cp -r ../manifest-templates/* apps/${APP_NAME}/ || true
+
+                    sed -i "s|\\${APP_NAME}|${APP_NAME}|g" apps/${APP_NAME}/*.yaml || true
+                    sed -i "s|\\${DOCKER_IMAGE}|${IMAGE_TAG}|g" apps/${APP_NAME}/deployment.yaml || true
+
+                    git config user.email "jenkins@local"
+                    git config user.name "jenkins"
+
+                    git add .
+                    git commit -m "Deploy ${APP_NAME} build ${BUILD_NUMBER}" || echo "No changes"
+
+                    git push origin main
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh "docker logout || true"
+            sh "docker image prune -f || true"
+        }
+    }
+}
