@@ -58,7 +58,7 @@ spec:
     # ✅ 2. Inject into EXISTING repo via PR
     - id: inject-ci-cd
       name: Inject CI/CD via Pull Request
-      action: publish:github:pull-request
+      action: publish:github
       input:
         repoUrl: ${{ parameters.repoUrl }}
         # token: ${{ secrets.USER_OAUTH_TOKEN }}
