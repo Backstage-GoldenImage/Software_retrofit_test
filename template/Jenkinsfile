@@ -7,6 +7,7 @@ pipeline {
         DOCKER_TAG = "1.0.${BUILD_NUMBER}"
         IMAGE_TAG = "${DOCKER_IMAGE}:${DOCKER_TAG}"
         GITOPS_REPO = "https://github.com/Backstage-GoldenImage/k8s-artifact.git"
+        RUN_PIPELINE = "true"
     }
 
     stages {
@@ -21,26 +22,34 @@ pipeline {
             steps {
                 script {
                     def changedFiles = sh(
-                    script: "git diff --name-only HEAD~1 || echo 'first-build'",
-                    returnStdout: true
-                ).trim()
+                        script: "git diff --name-only HEAD~1 || echo first-build",
+                        returnStdout: true
+                    ).trim()
 
-                echo "Changed Files:\n${changedFiles}"
+                    echo "Changed Files:\n${changedFiles}"
 
-                if (!changedFiles.contains("server.js") &&
-                    !changedFiles.contains("package.json")) {
+                    // First build → always run
+                    if (changedFiles.contains("first-build")) {
+                        echo "First build → running pipeline"
+                        return
+                    }
 
-                    echo "Only infra changes → Skipping pipeline"
+                    def shouldRun =
+                        changedFiles.contains("server.js") ||
+                        changedFiles.contains("package.json")
 
-                    currentBuild.result = 'SUCCESS'
-                    error("No app changes detected")
-               }
+                    if (!shouldRun) {
+                        echo "No app changes → Skipping pipeline"
+                        env.RUN_PIPELINE = "false"
+                    }
+                }
             }
-         }
-      }
-
+        }
 
         stage('Install Dependencies') {
+            when {
+                expression { env.RUN_PIPELINE == "true" }
+            }
             steps {
                 script {
                     if (fileExists('package.json')) {
@@ -53,6 +62,9 @@ pipeline {
         }
 
         stage('Run Tests') {
+            when {
+                expression { env.RUN_PIPELINE == "true" }
+            }
             steps {
                 script {
                     if (fileExists('package.json')) {
@@ -65,12 +77,18 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            when {
+                expression { env.RUN_PIPELINE == "true" }
+            }
             steps {
                 sh 'docker build -t ${IMAGE_TAG} .'
             }
         }
 
         stage('Login to Docker Hub') {
+            when {
+                expression { env.RUN_PIPELINE == "true" }
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
@@ -83,12 +101,18 @@ pipeline {
         }
 
         stage('Push Docker Image') {
+            when {
+                expression { env.RUN_PIPELINE == "true" }
+            }
             steps {
                 sh 'docker push ${IMAGE_TAG}'
             }
         }
 
         stage('Update GitOps Repo') {
+            when {
+                expression { env.RUN_PIPELINE == "true" }
+            }
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     sh '''
