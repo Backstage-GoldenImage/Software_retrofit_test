@@ -101,6 +101,7 @@ spec:
         repo:
           title: Repository Name
           type: string
+          ui:field: RepoDropdown
 
   steps:
     - id: fetch
