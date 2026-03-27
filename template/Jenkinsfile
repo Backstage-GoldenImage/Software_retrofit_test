@@ -18,29 +18,66 @@ pipeline {
             }
         }
 
+        // 🔥 CRITICAL FIX: Better change detection
         stage('Check Changes') {
             steps {
                 script {
-                    def changedFiles = sh(
-                        script: "git diff --name-only HEAD~1 || echo first-build",
+                    // Handle first commit safely
+                    def commitCount = sh(
+                        script: "git rev-list --count HEAD",
                         returnStdout: true
                     ).trim()
 
-                    echo "Changed Files:\n${changedFiles}"
+                    def changedFiles = ""
 
-                    // First build → always run
-                    if (changedFiles.contains("first-build")) {
+                    if (commitCount == "1") {
                         echo "First build → running pipeline"
                         return
+                    } else {
+                        // safer diff (handles merge commits too)
+                        changedFiles = sh(
+                            script: "git diff --name-only HEAD~1 HEAD",
+                            returnStdout: true
+                        ).trim()
                     }
 
+                    echo "Changed Files:\n${changedFiles}"
+
+                    // 🔥 Ignore template injection files
+                    def ignorePatterns = [
+                        "Jenkinsfile",
+                        "Dockerfile",
+                        "catalog-info.yaml",
+                        "manifest-template/"
+                    ]
+
+                    def isOnlyTemplateChange = true
+
+                    for (file in changedFiles.split("\n")) {
+                        if (file?.trim()) {
+                            def ignore = ignorePatterns.any { pattern ->
+                                file.startsWith(pattern) || file.contains(pattern)
+                            }
+
+                            if (!ignore) {
+                                isOnlyTemplateChange = false
+                            }
+                        }
+                    }
+
+                    // 🔥 Actual trigger condition
                     def shouldRun =
                         changedFiles.contains("server.js") ||
                         changedFiles.contains("package.json")
 
-                    if (!shouldRun) {
-                        echo "No app changes → Skipping pipeline"
+                    if (isOnlyTemplateChange) {
+                        echo "Only template files changed → Skipping pipeline"
                         env.RUN_PIPELINE = "false"
+                    } else if (!shouldRun) {
+                        echo "No relevant app changes → Skipping pipeline"
+                        env.RUN_PIPELINE = "false"
+                    } else {
+                        echo "Valid app changes detected → Running pipeline"
                     }
                 }
             }
@@ -55,7 +92,7 @@ pipeline {
                     if (fileExists('package.json')) {
                         sh 'npm install'
                     } else {
-                        echo "No package.json found, skipping npm install"
+                        echo "No package.json found"
                     }
                 }
             }
@@ -123,7 +160,7 @@ pipeline {
 
                     mkdir -p apps/${APP_NAME}
 
-                    cp -r ../manifest-templates/* apps/${APP_NAME}/ || true
+                    cp -r ../manifest-template/* apps/${APP_NAME}/ || true
 
                     sed -i "s|\\${APP_NAME}|${APP_NAME}|g" apps/${APP_NAME}/*.yaml || true
                     sed -i "s|\\${DOCKER_IMAGE}|${IMAGE_TAG}|g" apps/${APP_NAME}/deployment.yaml || true
