@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     def changedFiles = sh(
-                    script: "git diff --name-only HEAD~1",
+                    script: "git diff --name-only HEAD~1 || echo 'first-build'",
                     returnStdout: true
                 ).trim()
 
