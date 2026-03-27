@@ -60,18 +60,9 @@ spec:
       name: Inject CI/CD via Pull Request
       action: publish:github
       input:
-        repoUrl: ${{ parameters.repoUrl }}
-        # token: ${{ secrets.USER_OAUTH_TOKEN }}
-        branchName: backstage-integration-${{ parameters.component_id }}
-        title: "Add Jenkins + ArgoCD CI/CD"
-        description: |
-          This PR adds:
-          - Jenkinsfile
-          - Dockerfile
-          - catalog-info.yaml
-          - Kubernetes manifests
-        sourcePath: ./        # fetched files
-        targetPath: ./        # repo root
+        repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
+    defaultBranch: main
+    sourcePath: ./
 
     # ✅ 3. Register in Backstage Catalog
     # - id: register
