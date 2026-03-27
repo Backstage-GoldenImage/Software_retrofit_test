@@ -54,8 +54,8 @@ spec:
       action: publish:github
       input:
         repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
-    defaultBranch: main
-    sourcePath: ./
+        defaultBranch: main
+        sourcePath: ./
 
     # ✅ 3. Register in Backstage Catalog
     # - id: register
