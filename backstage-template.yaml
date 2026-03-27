@@ -19,17 +19,10 @@ spec:
 
     properties:
 
-      repoUrl:
-        title: Repository
+      repo:
+        title: Select Repository
         type: string
-        ui:field: RepoUrlPicker
-        ui:options:
-          allowedHosts:
-            - github.com
-          allowedOwners:
-            - Backstage-GoldenImage
-          # requestUserCredentials:
-          #   secretsKey: USER_OAUTH_TOKEN
+        ui:field: RepoDropdown
 
       component_id:
         title: Component Name
