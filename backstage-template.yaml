@@ -54,7 +54,8 @@ spec:
       action: publish:github:commit
       input:
         repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
-        defaultBranch: main
+        branchName: main
+        commitMessage: "Add CI/CD pipeline files"
         sourcePath: ./
 
     # ✅ 3. Register in Backstage Catalog
