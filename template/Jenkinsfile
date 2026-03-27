@@ -17,6 +17,28 @@ pipeline {
             }
         }
 
+        stage('Check Changes') {
+            steps {
+                script {
+                    def changedFiles = sh(
+                    script: "git diff --name-only HEAD~1",
+                    returnStdout: true
+                ).trim()
+
+                echo "Changed Files:\n${changedFiles}"
+
+                if (!changedFiles.contains("server.js") &&
+                    !changedFiles.contains("package.json")) {
+
+                    echo "Only infra changes → Skipping pipeline"
+
+                    currentBuild.result = 'SUCCESS'
+                    error("No app changes detected")
+               }
+            }
+         }
+      }
+
 
         stage('Install Dependencies') {
             steps {
