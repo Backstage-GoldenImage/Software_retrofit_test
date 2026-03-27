@@ -51,7 +51,7 @@ spec:
     # ✅ 2. Inject into EXISTING repo via PR
     - id: inject-ci-cd
       name: Inject CI/CD via Pull Request
-      action: publish:github
+      action: publish:github:commit
       input:
         repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
         defaultBranch: main
