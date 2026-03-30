@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 
 metadata:
-  name: ${{ parameters.component_id }}
+  name: ${{ values.app_name }}
   description: Service ${{values.app_name}}
 
   annotations:
