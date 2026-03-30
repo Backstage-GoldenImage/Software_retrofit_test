@@ -22,68 +22,35 @@ pipeline {
             steps {
                 script {
         
-                    def commitCount = sh(
-                        script: "git rev-list --count HEAD",
-                        returnStdout: true
-                    ).trim()
-        
                     def commitMessage = sh(
                         script: "git log -1 --pretty=%B",
                         returnStdout: true
                     ).trim()
         
+                    // ✅ ONLY first template injection skip
                     if (commitMessage.toLowerCase().contains("skip ci")) {
-                        echo "Skip CI detected → Skipping pipeline"
-                        env.RUN_PIPELINE = "false"
-                        return
-                    }
-        
-                    if (commitCount == "1") {
-                        echo "First build → Skipping pipeline"
+                        echo "Skipping ONLY template injection commit"
                         env.RUN_PIPELINE = "false"
                         return
                     }
         
                     def changedFiles = sh(
-                        script: "git diff --name-only HEAD~1 HEAD",
+                        script: "git diff --name-only HEAD~1 HEAD || echo ''",
                         returnStdout: true
                     ).trim()
         
                     echo "Changed Files:\n${changedFiles}"
         
-                    def ignorePatterns = [
-                        "Jenkinsfile",
-                        "Dockerfile",
-                        "catalog-info.yaml",
-                        "manifest-templates/"
-                    ]
-        
-                    def isOnlyTemplateChange = true
-        
-                    for (file in changedFiles.split("\n")) {
-                        if (file?.trim()) {
-                            def ignore = ignorePatterns.any { pattern ->
-                                file.startsWith(pattern) || file.contains(pattern)
-                            }
-        
-                            if (!ignore) {
-                                isOnlyTemplateChange = false
-                            }
-                        }
+                    // ✅ ONLY allow run when app changes
+                    def shouldRun = changedFiles.split("\n").any { file ->
+                        file.trim() == "server.js" || file.trim() == "package.json"
                     }
         
-                    def shouldRun =
-                        changedFiles.contains("server.js") ||
-                        changedFiles.contains("package.json")
-        
-                    if (isOnlyTemplateChange) {
-                        echo "Only template files changed → Skipping pipeline"
-                        env.RUN_PIPELINE = "false"
-                    } else if (!shouldRun) {
-                        echo "No relevant app changes → Skipping pipeline"
+                    if (!shouldRun) {
+                        echo "No app changes → Skipping pipeline"
                         env.RUN_PIPELINE = "false"
                     } else {
-                        echo "Valid app changes detected → Running pipeline"
+                        echo "App changes detected → Running pipeline"
                     }
                 }
             }
