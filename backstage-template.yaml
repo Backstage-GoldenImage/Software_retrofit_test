@@ -86,35 +86,64 @@
 
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
+
 metadata:
-  name: inject-ci-template
-  title: Inject CI/CD into Existing Repo
+  name: retrofit-jenkins-argocd
+  title: Inject CI/CD into Existing Repo (Direct Push)
+  description: Inject CI/CD directly into main branch (no PR)
+
 spec:
-  owner: user:guest
+  owner: development
   type: service
 
   parameters:
-    - title: Select Repo
+    - title: Select Existing Repository
       required:
         - repo
+        - component_id
+        - environment
+
       properties:
+
         repo:
-          title: Repository Name
+          title: Select Repository
           type: string
           ui:field: RepoDropdown
 
+        component_id:
+          title: Component Name
+          type: string
+
+        environment:
+          title: Environment
+          type: string
+          enum:
+            - dev
+            - prod
+
   steps:
-    - id: fetch
-      name: Fetch Template
+
+    # ✅ 1. Fetch template files
+    - id: fetch-base
+      name: Fetch Template Files
       action: fetch:template
       input:
-        url: ./template-files
+        url: ./template
+        values:
+          app_name: ${{ parameters.component_id }}
+          app_env: ${{ parameters.environment }}
 
-    - id: push
-      name: Push to Repo
+    # 🔥 2. DIRECT PUSH TO MAIN (NO PR)
+    - id: push-to-main
+      name: Inject CI/CD Directly
       action: github:push
       input:
         repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
         branch: main
-        commitMessage: "Inject CI/CD Template [skip ci]"
-        sourcePath: .
+        commitMessage: "Inject CI/CD template [skip ci]"
+        sourcePath: ./
+
+  output:
+    links:
+      - title: View Repository
+        url: https://github.com/Backstage-GoldenImage/${{ parameters.repo }}
