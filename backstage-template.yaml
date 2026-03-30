@@ -89,8 +89,8 @@ kind: Template
 
 metadata:
   name: retrofit-jenkins-argocd
-  title: Inject CI/CD into Existing Repo (Direct Push)
-  description: Inject CI/CD directly into main branch (no PR)
+  title: Inject CI/CD into Existing Repo
+  description: Inject CI/CD directly into main branch
 
 spec:
   owner: development
@@ -108,7 +108,7 @@ spec:
         repo:
           title: Select Repository
           type: string
-          ui:field: RepoDropdown
+          # ui:field: RepoDropdown
 
         component_id:
           title: Component Name
