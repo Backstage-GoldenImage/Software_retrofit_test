@@ -32,7 +32,7 @@ pipeline {
                         returnStdout: true
                     ).trim()
         
-                    if (commitMessage.contains("[skip ci]")) {
+                    if (commitMessage.toLowerCase().contains("skip ci")) {
                         echo "Skip CI detected → Skipping pipeline"
                         env.RUN_PIPELINE = "false"
                         return
@@ -55,7 +55,7 @@ pipeline {
                         "Jenkinsfile",
                         "Dockerfile",
                         "catalog-info.yaml",
-                        "manifest-template/"
+                        "manifest-templates/"
                     ]
         
                     def isOnlyTemplateChange = true
