@@ -123,7 +123,6 @@ spec:
 
   steps:
 
-    # ✅ 1. Fetch template files
     - id: fetch-base
       name: Fetch Template Files
       action: fetch:template
@@ -133,7 +132,6 @@ spec:
           app_name: ${{ parameters.component_id }}
           app_env: ${{ parameters.environment }}
 
-    # 🔥 2. DIRECT PUSH TO MAIN (NO PR)
     - id: push-to-main
       name: Inject CI/CD Directly
       action: github:push

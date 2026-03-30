@@ -18,58 +18,64 @@ pipeline {
             }
         }
 
-        // 🔥 CRITICAL FIX: Better change detection
         stage('Check Changes') {
             steps {
                 script {
-                    // Handle first commit safely
+        
                     def commitCount = sh(
                         script: "git rev-list --count HEAD",
                         returnStdout: true
                     ).trim()
-
-                    def changedFiles = ""
-
-                    if (commitCount == "1") {
-                        echo "First build → running pipeline"
+        
+                    def commitMessage = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+        
+                    if (commitMessage.contains("[skip ci]")) {
+                        echo "Skip CI detected → Skipping pipeline"
+                        env.RUN_PIPELINE = "false"
                         return
-                    } else {
-                        // safer diff (handles merge commits too)
-                        changedFiles = sh(
-                            script: "git diff --name-only HEAD~1 HEAD",
-                            returnStdout: true
-                        ).trim()
                     }
-
+        
+                    if (commitCount == "1") {
+                        echo "First build → Skipping pipeline"
+                        env.RUN_PIPELINE = "false"
+                        return
+                    }
+        
+                    def changedFiles = sh(
+                        script: "git diff --name-only HEAD~1 HEAD",
+                        returnStdout: true
+                    ).trim()
+        
                     echo "Changed Files:\n${changedFiles}"
-
-                    // 🔥 Ignore template injection files
+        
                     def ignorePatterns = [
                         "Jenkinsfile",
                         "Dockerfile",
                         "catalog-info.yaml",
                         "manifest-template/"
                     ]
-
+        
                     def isOnlyTemplateChange = true
-
+        
                     for (file in changedFiles.split("\n")) {
                         if (file?.trim()) {
                             def ignore = ignorePatterns.any { pattern ->
                                 file.startsWith(pattern) || file.contains(pattern)
                             }
-
+        
                             if (!ignore) {
                                 isOnlyTemplateChange = false
                             }
                         }
                     }
-
-                    // 🔥 Actual trigger condition
+        
                     def shouldRun =
                         changedFiles.contains("server.js") ||
                         changedFiles.contains("package.json")
-
+        
                     if (isOnlyTemplateChange) {
                         echo "Only template files changed → Skipping pipeline"
                         env.RUN_PIPELINE = "false"
