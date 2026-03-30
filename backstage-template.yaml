@@ -134,7 +134,7 @@ spec:
 
     - id: push-to-main
       name: Inject CI/CD Directly
-      action: github:push:commit
+      action: publish:github:commit
       input:
         repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
         branch: main
