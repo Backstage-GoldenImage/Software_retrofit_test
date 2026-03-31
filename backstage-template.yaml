@@ -155,4 +155,4 @@ spec:
   output:
     links:
       - title: View Repository
-        url: https://github.com/Backstage-GoldenImage/${{ parameters.repo }}
+        url: https://github.com/Backstage-GoldenImage/${{ parameters.repo }}/tree/${{ parameters.branch }}
