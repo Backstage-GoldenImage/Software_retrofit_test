@@ -108,12 +108,12 @@ spec:
         repo:
           title: Select Repository
           type: string
-          ui:field: RepoDropdown
+          # ui:field: RepoDropdown
   
         branch:
           title: Select Branch
           type: string
-          ui:field: BranchDropdown
+          # ui:field: BranchDropdown
   
         component_id:
           title: Component Name
