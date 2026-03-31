@@ -110,6 +110,10 @@ spec:
           type: string
           # ui:field: RepoDropdown
 
+        branch:
+          title: Select Branch
+          type: string
+
         component_id:
           title: Component Name
           type: string
