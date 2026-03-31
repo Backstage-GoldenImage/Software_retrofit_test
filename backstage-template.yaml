@@ -90,7 +90,7 @@ kind: Template
 metadata:
   name: retrofit-jenkins-argocd
   title: Inject CI/CD into Existing Repo
-  description: Inject CI/CD directly into main branch
+  description: Inject CI/CD directly into Desired Branch
 
 spec:
   owner: development
