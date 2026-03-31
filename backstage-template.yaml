@@ -97,19 +97,24 @@ spec:
   type: service
 
   parameters:
-    - title: Select Existing Repository
+    - title: Select Repo & Branch
       required:
         - repo
+        - branch
         - component_id
-        - environment
-
+  
       properties:
-
+  
         repo:
           title: Select Repository
           type: string
-          # ui:field: RepoDropdown
-
+          ui:field: RepoDropdown
+  
+        branch:
+          title: Select Branch
+          type: string
+          ui:field: BranchDropdown
+  
         component_id:
           title: Component Name
           type: string
@@ -145,7 +150,7 @@ spec:
       action: github:push
       input:
         repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
-        branch: main
+        branch: ${{ parameters.branch }}
         commitMessage: "Inject CI/CD template [skip ci]"
         sourcePath: ./
 
