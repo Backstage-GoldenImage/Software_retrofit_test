@@ -104,17 +104,12 @@ spec:
         - component_id
   
       properties:
-  
+
         repo:
           title: Select Repository
           type: string
           # ui:field: RepoDropdown
-  
-        branch:
-          title: Select Branch
-          type: string
-          # ui:field: BranchDropdown
-  
+
         component_id:
           title: Component Name
           type: string
@@ -125,7 +120,6 @@ spec:
           enum:
             - dev
             - prod
-
   steps:
 
     - id: fetch-base
