@@ -110,7 +110,7 @@ spec:
           type: string
           # ui:field: RepoDropdown
 
-        branch:
+        branch_id:
           title: Select Branch
           type: string
 
@@ -148,11 +148,11 @@ spec:
       action: github:push
       input:
         repoUrl: github.com?owner=Backstage-GoldenImage&repo=${{ parameters.repo }}
-        branch: ${{ parameters.branch }}
+        branch: ${{ parameters.branch_id }}
         commitMessage: "Inject CI/CD template [skip ci]"
         sourcePath: ./
 
   output:
     links:
       - title: View Repository
-        url: https://github.com/Backstage-GoldenImage/${{ parameters.repo }}/tree/${{ parameters.branch }}
+        url: https://github.com/Backstage-GoldenImage/${{ parameters.repo }}/tree/${{ parameters.branch_id }}
