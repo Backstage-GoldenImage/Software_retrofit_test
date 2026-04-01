@@ -2,15 +2,15 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 
 metadata:
-  name: ${{values.app_name}}-${{values.branch_name}}
-  description: Service ${{values.app_name}}-${{values.branch_name}}
+  name: ${{values.app_name}}
+  description: Service ${{values.app_name}}
 
   annotations:
     github.com/project-slug: Backstage-GoldenImage/${{values.app_name}}
     backstage.io/techdocs-ref: dir:.
-    jenkins.io/job-full-name: Backstage_GoldenImage/${{values.app_name}}/${{values.branch_name}}
-    argocd/app-name: ${{ values.app_name | lower }}-${{values.branch_name}}
-    backstage.io/kubernetes-id: ${{values.app_name}}-${{values.branch_name}}
+    jenkins.io/job-full-name: Backstage_GoldenImage/${{values.app_name}}/main
+    argocd/app-name: ${{ values.app_name | lower }}
+    backstage.io/kubernetes-id: ${{values.app_name}}
     backstage.io/kubernetes-namespace: default
 
 spec:
