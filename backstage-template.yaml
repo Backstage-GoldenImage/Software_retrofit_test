@@ -100,7 +100,7 @@ spec:
     - title: Select Repo & Branch
       required:
         - repo
-        - branch
+        - branch_id
         - component_id
   
       properties:
